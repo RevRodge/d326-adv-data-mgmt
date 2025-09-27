@@ -10,14 +10,11 @@ This project is my WGU D326 performance assessment using the PostgreSQL DVD Rent
 
 ## Structure
 
-- `sql/00_prereqs.sql`: Sets session defaults
 - `sql/01_function_udf_on_time_flag.sql`: Creates UDF to determine on-time returns
 - `sql/02_report_tables.sql`: Creates detailed and summary report tables
-- `sql/03_raw_extraction_select.sql`: Reference-only raw SELECT
-- `sql/04_trigger_summary_sync.sql`: Trigger to keep summary in sync
-- `sql/05_procedure_refresh.sql`: Procedure to rebuild everything
-- `sql/06_sample_kpi_queries.sql`: Useful queries to explore KPI trends
-- `sql/99_teardown.sql`: Clean reset script
+- `sql/03_trigger_summary_sync.sql`: Trigger to keep summary in sync
+- `sql/04_procedure_refresh.sql`: Procedure to rebuild everything
+- `sql/05_sample_kpi_queries.sql`: Useful queries to explore KPI trends
 
 ## How to Use
 
