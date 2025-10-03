@@ -20,7 +20,7 @@ AS $$
 BEGIN
   -- 1) Clear existing data (idempotent rebuild)
   TRUNCATE TABLE report_category_monthly RESTART IDENTITY;
-  TRUNCATE TABLE report_rental_detail    RESTART IDENTITY;
+  TRUNCATE TABLE report_rental_detail RESTART IDENTITY;
 
   -- 2) Load detail from source schema
   INSERT INTO report_rental_detail (
@@ -31,26 +31,26 @@ BEGIN
       payment_amount
   )
   SELECT
-      date_trunc('month', p.payment_date)::date                                    AS report_month,
-      s.store_id                                                                    AS store_id,
-      ('Store ' || s.store_id)::varchar(100)                                        AS store_name,
-      r.rental_id                                                                   AS rental_id,
-      p.payment_id                                                                   AS payment_id,
-      c.customer_id                                                                  AS customer_id,
-      (c.first_name || ' ' || c.last_name)                                          AS customer_name,
-      f.film_id                                                                      AS film_id,
-      f.title                                                                        AS film_title,
-      cat.category_id                                                                AS category_id,
-      cat.name                                                                       AS category_name,
-      r.rental_date                                                                  AS rental_date,
-      r.return_date                                                                  AS return_date,
-      r.rental_date + (f.rental_duration || ' days')::interval                       AS due_date,
+      date_trunc('month', p.payment_date)::date AS report_month,
+      s.store_id AS store_id,
+      ('Store ' || s.store_id)::varchar(100) AS store_name,
+      r.rental_id AS rental_id,
+      p.payment_id AS payment_id,
+      c.customer_id AS customer_id,
+      (c.first_name || ' ' || c.last_name) AS customer_name,
+      f.film_id AS film_id,
+      f.title AS film_title,
+      cat.category_id AS category_id,
+      cat.name AS category_name,
+      r.rental_date AS rental_date,
+      r.return_date AS return_date,
+      r.rental_date + (f.rental_duration || ' days')::interval AS due_date,
       CASE WHEN r.return_date IS NOT NULL
            THEN (r.return_date::date - r.rental_date::date)
            ELSE NULL
-      END                                                                            AS days_rented,
-      udf_on_time_flag(r.rental_date, r.return_date, f.rental_duration)             AS on_time_flag,
-      p.amount::numeric(10,2)                                                        AS payment_amount
+      END AS days_rented,
+      udf_on_time_flag(r.rental_date, r.return_date, f.rental_duration) AS on_time_flag,
+      p.amount::numeric(10,2) AS payment_amount
   FROM payment p
   JOIN rental r          ON p.rental_id   = r.rental_id
   JOIN customer c        ON r.customer_id = c.customer_id
