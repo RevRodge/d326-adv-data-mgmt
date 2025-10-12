@@ -1,21 +1,4 @@
--- ================================================================
--- 01_function_udf_on_time_flag.sql
---
--- Purpose:
---   Decide if a rental is on-time ('Y') or late ('N') using:
---     - rental timestamp
---     - return timestamp
---     - rental duration (days) from film
---
--- Desc:
---   Returns 'Y' if return_ts <= rental_ts + rental_days
---   Returns 'N' otherwise
---   Returns NULL if any input is NULL
---   Output depends only on inputs (does not do any table lookups)
--- ================================================================
-
--- DROP FUNCTION IF EXISTS udf_on_time_flag(timestamp, timestamp, integer);
-
+DROP FUNCTION IF EXISTS udf_on_time_flag(timestamp, timestamp, integer);
 CREATE OR REPLACE FUNCTION udf_on_time_flag(
     p_rental_ts timestamp,
     p_return_ts timestamp,
