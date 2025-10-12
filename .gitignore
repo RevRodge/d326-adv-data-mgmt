@@ -1,5 +1,6 @@
 # .gitignore
 *.log
+# .vscode
 *.tmp
 __pycache__/
 .DS_Store
