@@ -27,9 +27,11 @@ BEGIN
       r.rental_date,
       r.return_date,
       r.rental_date + (f.rental_duration || ' days')::interval,
-      CASE WHEN r.return_date IS NOT NULL THEN (r.return_date::date - r.rental_date::date) ELSE NULL END,
-      udf_on_time_flag(r.rental_date, r.return_date, f.rental_duration),
-      p.amount::numeric(10,2)
+      CASE WHEN r.return_date IS NOT NULL
+         THEN (r.return_date::date - r.rental_date::date)
+         ELSE f.rental_duration END,
+    udf_on_time_flag(r.rental_date,r.return_date,f.rental_duration),
+    p.amount::numeric(10,2)
   FROM payment p
   JOIN rental r ON p.rental_id = r.rental_id
   JOIN customer c ON r.customer_id = c.customer_id

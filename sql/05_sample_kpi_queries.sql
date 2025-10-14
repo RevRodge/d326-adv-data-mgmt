@@ -60,8 +60,8 @@ SELECT
     CASE
       WHEN r.return_date IS NOT NULL
         THEN (r.return_date::date - r.rental_date::date)
-      ELSE NULL
-    END AS days_rented,
+      ELSE f.rental_duration
+    END AS days_rented
     udf_on_time_flag(r.rental_date, r.return_date, f.rental_duration) AS on_time_flag,
     p.amount::numeric(10,2) AS payment_amount
 FROM payment p
