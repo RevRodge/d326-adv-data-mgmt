@@ -14,7 +14,7 @@ SELECT
     rentals_count,
     total_revenue,
     ROUND(total_days_rented::numeric / NULLIF(rentals_count, 0), 2) AS avg_days_rented,
-    ROUND(late_rentals::numeric / NULLIF(rentals_count, 0), 4)      AS late_rate
+    ROUND(late_rentals::numeric / NULLIF(rentals_count, 0), 4) AS late_rate
 FROM report_category_monthly
 ORDER BY report_month DESC, total_revenue DESC
 LIMIT 50;
@@ -61,14 +61,14 @@ SELECT
       WHEN r.return_date IS NOT NULL
         THEN (r.return_date::date - r.rental_date::date)
       ELSE NULL
-    END                                                          AS days_rented,
+    END AS days_rented,
     udf_on_time_flag(r.rental_date, r.return_date, f.rental_duration) AS on_time_flag,
-    p.amount::numeric(10,2)                                      AS payment_amount
+    p.amount::numeric(10,2) AS payment_amount
 FROM payment p
-JOIN rental r ON p.rental_id   = r.rental_id
+JOIN rental r ON p.rental_id = r.rental_id
 JOIN customer c ON r.customer_id = c.customer_id
 JOIN inventory i ON r.inventory_id = i.inventory_id
-JOIN store s ON i.store_id    = s.store_id
-JOIN film f ON i.film_id     = f.film_id
-JOIN film_category fc ON f.film_id     = fc.film_id
+JOIN store s ON i.store_id = s.store_id
+JOIN film f ON i.film_id = f.film_id
+JOIN film_category fc ON f.film_id = fc.film_id
 JOIN category cat ON fc.category_id = cat.category_id;
