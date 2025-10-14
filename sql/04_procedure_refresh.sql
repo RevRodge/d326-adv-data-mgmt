@@ -13,50 +13,31 @@ BEGIN
       payment_amount
   )
   SELECT
-      date_trunc('month', p.payment_date)::date AS report_month,
-      s.store_id AS store_id,
-      ('Store ' || s.store_id)::varchar(100) AS store_name,
-      r.rental_id AS rental_id,
-      p.payment_id AS payment_id,
-      c.customer_id AS customer_id,
-      (c.first_name || ' ' || c.last_name) AS customer_name,
-      f.film_id AS film_id,
-      f.title AS film_title,
-      cat.category_id AS category_id,
-      cat.name AS category_name,
-      r.rental_date AS rental_date,
-      r.return_date AS return_date,
-      r.rental_date + (f.rental_duration || ' days')::interval AS due_date,
-      CASE WHEN r.return_date IS NOT NULL
-           THEN (r.return_date::date - r.rental_date::date)
-           ELSE NULL
-      END AS days_rented,
-      udf_on_time_flag(r.rental_date, r.return_date, f.rental_duration) AS on_time_flag,
-      p.amount::numeric(10,2) AS payment_amount
+      date_trunc('month', p.payment_date)::date,
+      s.store_id,
+      ('Store ' || s.store_id)::varchar(100),
+      r.rental_id,
+      p.payment_id,
+      c.customer_id,
+      (c.first_name || ' ' || c.last_name),
+      f.film_id,
+      f.title,
+      cat.category_id,
+      cat.name,
+      r.rental_date,
+      r.return_date,
+      r.rental_date + (f.rental_duration || ' days')::interval,
+      CASE WHEN r.return_date IS NOT NULL THEN (r.return_date::date - r.rental_date::date) ELSE NULL END,
+      udf_on_time_flag(r.rental_date, r.return_date, f.rental_duration),
+      p.amount::numeric(10,2)
   FROM payment p
-  JOIN rental r ON p.rental_id   = r.rental_id
+  JOIN rental r ON p.rental_id = r.rental_id
   JOIN customer c ON r.customer_id = c.customer_id
   JOIN inventory i ON r.inventory_id = i.inventory_id
-  JOIN store s ON i.store_id    = s.store_id
-  JOIN film f ON i.film_id     = f.film_id
-  JOIN film_category fc ON f.film_id     = fc.film_id
+  JOIN store s ON i.store_id = s.store_id
+  JOIN film f ON i.film_id = f.film_id
+  JOIN film_category fc ON f.film_id = fc.film_id
   JOIN category cat ON fc.category_id = cat.category_id;
-  INSERT INTO report_category_monthly (
-      report_month, store_id, category_id, store_name, category_name,
-      rentals_count, total_revenue, total_days_rented, late_rentals
-  )
-  SELECT
-      d.report_month,
-      d.store_id,
-      d.category_id,
-      MAX(d.store_name) AS store_name,
-      MAX(d.category_name) AS category_name,
-      COUNT(*) AS rentals_count,
-      SUM(d.payment_amount) AS total_revenue,
-      SUM(COALESCE(d.days_rented, 0)) AS total_days_rented,
-      SUM(CASE WHEN d.on_time_flag = 'N' THEN 1 ELSE 0 END) AS late_rentals
-  FROM report_rental_detail d
-  GROUP BY d.report_month, d.store_id, d.category_id;
 END;
 $$;
 -- One-time build (run after creating):
