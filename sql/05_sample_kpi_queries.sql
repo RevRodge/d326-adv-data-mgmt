@@ -1,7 +1,7 @@
 -- ================================================================
 -- D326 – DVD Rental KPI Report
 -- 05_sample_kpi_queries.sql
---
+-- Derek Rogers
 -- All queries pull from: report_category_monthly
 -- ================================================================
 
@@ -19,29 +19,39 @@ FROM report_category_monthly
 ORDER BY report_month DESC, total_revenue DESC
 LIMIT 50;
 
--- Late return rate trend by store (month over month)
-SELECT
-    report_month,
-    store_id,
-    store_name,
-    ROUND(100.0 * late_rentals::numeric / NULLIF(rentals_count, 0), 2) AS late_rate_pct
-FROM report_category_monthly
-ORDER BY store_id, report_month;
--- Category revenue share per store/month
+-- Late return rate trend aggregation (1 row per store x month)
 SELECT
   report_month,
   store_id,
-  store_name,
-  category_name,
-  ROUND(
-    100.0 * total_revenue::numeric
-    / NULLIF(SUM(total_revenue) OVER (PARTITION BY report_month, store_id), 0),
-    2
-  ) AS revenue_share_pct
+  MAX(store_name) AS store_name,
+  SUM(late_rentals)   AS late_rentals,
+  SUM(rentals_count)  AS rentals_count,
+  ROUND(100.0 * SUM(late_rentals)::numeric / NULLIF(SUM(rentals_count),0), 2) AS late_rate_pct
 FROM report_category_monthly
+GROUP BY report_month, store_id
+ORDER BY report_month, store_id;
+-- Category revenue share (by store x month)
+WITH ranked AS (
+  SELECT
+    report_month,
+    store_id,
+    MAX(store_name) OVER (PARTITION BY report_month, store_id) AS store_name,
+    category_name,
+    total_revenue,
+    ROUND(
+      100.0 * total_revenue::numeric
+      / NULLIF(SUM(total_revenue) OVER (PARTITION BY report_month, store_id), 0),
+      2
+    ) AS revenue_share_pct,
+    ROW_NUMBER() OVER (PARTITION BY report_month, store_id ORDER BY total_revenue DESC) AS rn
+  FROM report_category_monthly
+)
+SELECT report_month, store_id, store_name, category_name, revenue_share_pct
+FROM ranked
+WHERE rn <= 5
 ORDER BY report_month DESC, store_id, revenue_share_pct DESC;
 
-/* Raw data extraction for the detailed report section */
+-- Raw data extraction for the detailed report section (Part D.)
 SELECT
     date_trunc('month', p.payment_date)::date AS report_month,
     s.store_id AS store_id,
